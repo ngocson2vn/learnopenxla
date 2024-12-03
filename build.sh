@@ -6,8 +6,8 @@ set -e
 # Prerequisites
 ###################################################################################################
 # python
-# pyenv install 3.9.0
-# pyenv global 3.9.0
+# pyenv install 3.11.0
+# pyenv global 3.11.0
 
 python_version=$(python -V | awk '{print $2}')
 echo "Python version: ${python_version}"
@@ -43,15 +43,24 @@ else
   echo
 fi
 
-# git config -f .gitmodules submodule.third_party/tensorflow.shallow true
-# git submodule update --init --recursive
+git submodule update --init --recursive
 
-echo "tensorflow submodule"
+echo "git submodule status"
 git submodule status
 echo
 
+
+###################################################################################################
+# Build tf2stablehlo
+###################################################################################################
+echo "============================="
+echo "Build tf2stablehlo"
+echo "============================="
+
+yes | cp -vf tf2stablehlo/workspace.bzl ./WORKSPACE
+
 # Patch tensorflow
-pushd third_party/tensorflow/
+pushd tf2stablehlo/third_party/tensorflow/
 if [ ! -f patch.done ]; then
   echo "START patching tensorflow"
   git apply ../../patches/tensorflow/*.patch
@@ -60,12 +69,9 @@ if [ ! -f patch.done ]; then
 fi
 popd
 
-yes | cp -vf third_party/tensorflow/.bazelversion .
-yes | cp -vf third_party/tensorflow/.bazelrc .
+yes | cp -vf tf2stablehlo/third_party/tensorflow/.bazelversion .
+yes | cp -vf tf2stablehlo/third_party/tensorflow/.bazelrc .
 
-###################################################################################################
-# Build targets
-###################################################################################################
 export TF_NEED_ROCM=0
 export TF_NEED_OPENCL_SYCL=0
 export TF_NEED_CUDA=1
@@ -81,47 +87,60 @@ export TF_CUDA_CLANG="0"
 export GCC_HOST_COMPILER_PATH="/usr/bin/gcc"
 
 rm -rf output
+mkdir -p output/bin
 mkdir -p output/lib
 
 FLAGS="--define=no_nccl_support=true --define=no_aws_support=true --define=no_gcp_support=true --define=no_hdfs_support=true"
 
-# COPTS="-O0,-g,-fno-inline"
-# SRC_FILES=+tf2stablehlo.cc
-# SRC_FILES=${SRC_FILES},+tensorflow/compiler/mlir/quantization/tensorflow/quantize_preprocess.cc
-# SRC_FILES=${SRC_FILES},+tensorflow/compiler/mlir/tensorflow/transforms/shape_inference_pass.cc
-# SRC_FILES=${SRC_FILES},+tensorflow/compiler/mlir/tensorflow/transforms/shape_inference.cc
-# CC=/usr/bin/gcc ./bazel --output_user_root=./forge build //:tf2stablehlo \
-# --per_file_copt=${SRC_FILES}@${COPTS} \
-# --strip=never $FLAGS \
-# --experimental_repo_remote_exec \
-# --verbose_failures \
-# --sandbox_debug \
-# -j 128
+COPTS="-O0,-g,-fno-inline"
+SRC_FILES=+tf2stablehlo.cc
+SRC_FILES=${SRC_FILES},+tensorflow/compiler/mlir/quantization/tensorflow/quantize_preprocess.cc
+SRC_FILES=${SRC_FILES},+tensorflow/compiler/mlir/tensorflow/transforms/shape_inference_pass.cc
+SRC_FILES=${SRC_FILES},+tensorflow/compiler/mlir/tensorflow/transforms/shape_inference.cc
+CC=/usr/bin/gcc ./bazel --output_user_root=tf2stablehlo/build build //tf2stablehlo:tf2stablehlo \
+--per_file_copt=${SRC_FILES}@${COPTS} \
+--strip=never $FLAGS \
+--experimental_repo_remote_exec \
+--verbose_failures \
+--sandbox_debug \
+-j `nproc`
 
-# cp -v  bazel-bin/tf2stablehlo output/
-# cp -Lv bazel-bin/external/org_tensorflow/tensorflow/libtensorflow_framework.so.2 output/lib/
-# pushd output
-# chmod +w tf2stablehlo
-# patchelf --force-rpath --set-rpath ./lib tf2stablehlo
-# popd
-# cp -rv sample output/
-# cp -v  run.sh output/
+cp -v  bazel-bin/tf2stablehlo/tf2stablehlo output/bin
+cp -Lv bazel-bin/external/org_tensorflow/tensorflow/libtensorflow_framework.so.2 output/lib/
+pushd output
+chmod +w bin/tf2stablehlo
+patchelf --force-rpath --set-rpath ./lib bin/tf2stablehlo
+popd
+cp -rv sample output/
+cp -v  run.sh output/
+echo && echo
+
+###################################################################################################
+# Build compiler
+###################################################################################################
+echo "============================="
+echo "Build compiler"
+echo "============================="
+
+yes | cp -vf compiler/workspace.bzl ./WORKSPACE
+
+yes | cp -vf compiler/third_party/xla/.bazelversion .
+yes | cp -vf compiler/third_party/xla/.bazelrc .
 
 COPTS="-O0,-g,-fno-inline"
-SRC_FILES=+stablehlo_compiler.cc
-# CC=/usr/bin/gcc ./bazel --output_user_root=./forge build --config=cuda --explain=explain.txt //:stablehlo_compiler \
-# --experimental_repo_remote_exec \
-CC=/usr/bin/gcc ./bazel build --config=cuda --explain=explain.txt --subcommands //:stablehlo_compiler \
+SRC_FILES=+compiler.cc
+CC=/usr/bin/gcc ./bazel --output_user_root=compiler/build build --config=cuda --cxxopt=-v //compiler:compiler \
+--repo_env=HERMETIC_CUDA_VERSION="12.2.0" \
+--repo_env=HERMETIC_CUDNN_VERSION="8.9.7.29" \
 --per_file_copt=${SRC_FILES}@${COPTS} \
 --strip=never $FLAGS \
 --verbose_failures \
 --sandbox_debug \
---experimental_ui_max_stdouterr_bytes=10485760
+--experimental_ui_max_stdouterr_bytes=10485760 \
 -j `nproc`
 
-cp -v  bazel-bin/stablehlo_compiler output/
+cp -v bazel-bin/compiler/compiler output/bin
 pushd output
-chmod +w stablehlo_compiler
-patchelf --force-rpath --set-rpath ./lib stablehlo_compiler
+chmod +w bin/compiler
+patchelf --force-rpath --set-rpath ./lib bin/compiler
 popd
-cp -v  compile.sh output/

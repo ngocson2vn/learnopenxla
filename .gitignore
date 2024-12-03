@@ -1,1 +1,7 @@
+.bazelrc
+.bazelversion
 bazel-*
+tf2stablehlo/build
+compiler/build
+WORKSPACE
+output/

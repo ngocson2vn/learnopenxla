@@ -1,13 +1,9 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-local_repository(
-    name = "org_tensorflow",
-    path = "./third_party/tensorflow",
-)
-
+############################################################################
+# XLA
+############################################################################
 local_repository(
     name = "xla",
-    path = "./third_party/xla",
+    path = "./compiler/third_party/xla",
 )
 
 # Initialize the XLA repository and all dependencies.
@@ -95,5 +91,16 @@ load(
 
 cuda_configure(name = "local_config_cuda")
 
-load("@org_tensorflow//tensorflow:workspace3.bzl", "tf_workspace3")
-tf_workspace3()
+# load(
+#     "@tsl//third_party/nccl/hermetic:nccl_redist_init_repository.bzl",
+#     "nccl_redist_init_repository",
+# )
+
+# nccl_redist_init_repository()
+
+# load(
+#     "@tsl//third_party/nccl/hermetic:nccl_configure.bzl",
+#     "nccl_configure",
+# )
+
+# nccl_configure(name = "local_config_nccl")

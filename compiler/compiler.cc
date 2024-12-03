@@ -81,13 +81,13 @@ absl::Status compile() {
   // key. For example for an Nvidia GPU change the following to:
   //   PlatformUtil::GetPlatform("CUDA"));
   TF_ASSIGN_OR_RETURN(
-    se::Platform* platform, PlatformUtil::GetPlatform("cpu"));
+    se::Platform* platform, PlatformUtil::GetPlatform("Host"));
   TF_ASSIGN_OR_RETURN(
     se::StreamExecutor* executor, platform->ExecutorForDevice(/*ordinal=*/0));
 
   // LocalDeviceState and PjRtStreamExecutorDevice describes the state of a
   // device which can do computation or transfer buffers. This could represent a
-  // GPU or accelerator, but we'll use the CPU for this example.
+  // GPU or accelerator.
   auto device_state = std::make_unique<LocalDeviceState>(
       executor, local_client, LocalDeviceState::kSynchronous,
       /*max_inflight_computations=*/32,
