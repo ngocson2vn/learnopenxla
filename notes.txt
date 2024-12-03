@@ -1,0 +1,2 @@
+"@local_xla//xla/stream_executor/cuda:all_runtime",
+"@local_xla//xla/stream_executor/cuda:cuda_platform",

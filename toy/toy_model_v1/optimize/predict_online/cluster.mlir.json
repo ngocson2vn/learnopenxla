@@ -1,0 +1,21 @@
+{
+    "predict_online": {
+        "cluster_func_name_map(may not correct)": {
+            "predict_online_0": [
+                "Sigmoid:0"
+            ]
+        },
+        "cluster_fusion_group": {
+            "FUSION_GROUP_0": [
+                "predict_online_0"
+            ]
+        },
+        "env": {
+            "AF_CLUSTER_FUSION": true,
+            "AF_CLUSTER_MERGE": true
+        },
+        "analysis": {
+            "score": 0.55
+        }
+    }
+}

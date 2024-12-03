@@ -1,0 +1,45 @@
+inference {
+  name: "predict_online"
+  feed {
+    feature_columns {
+      shape {
+        dim {
+          size: -1
+        }
+        dim {
+          size: 4
+        }
+      }
+      dtype: DT_FLOAT
+      name: "X1:0"
+      fc_name: "X1"
+    }
+    feature_columns {
+      shape {
+        dim {
+          size: -1
+        }
+        dim {
+          size: 4
+        }
+      }
+      dtype: DT_FLOAT
+      name: "X2:0"
+      fc_name: "X2"
+    }
+  }
+  fetch {
+    heads {
+      prediction {
+        shape {
+          dim {
+            size: -1
+          }
+        }
+        dtype: DT_FLOAT
+        name: "Sigmoid:0"
+      }
+      name: "pred_cvr"
+    }
+  }
+}

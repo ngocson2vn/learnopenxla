@@ -1,0 +1,56 @@
+diff --git a/tensorflow/BUILD b/tensorflow/BUILD
+index fb87fda9f82..c50bdac280e 100644
+--- a/tensorflow/BUILD
++++ b/tensorflow/BUILD
+@@ -1248,6 +1248,7 @@ cc_import(
+         "//tensorflow:macos": ":libtensorflow_framework.dylib",
+         "//conditions:default": ":libtensorflow_framework.so.%s" % VERSION_MAJOR,
+     }),
++    visibility = ["//visibility:public"],
+ )
+ 
+ # -------------------------------------------
+diff --git a/tensorflow/compiler/mlir/quantization/stablehlo/cc/BUILD b/tensorflow/compiler/mlir/quantization/stablehlo/cc/BUILD
+index 5f150550af2..726c3ab50be 100644
+--- a/tensorflow/compiler/mlir/quantization/stablehlo/cc/BUILD
++++ b/tensorflow/compiler/mlir/quantization/stablehlo/cc/BUILD
+@@ -20,6 +20,7 @@ cc_library(
+     hdrs = ["types.h"],
+     compatible_with = get_compatible_with_portable(),
+     deps = [],
++    visibility = ["//visibility:public"],
+ )
+ 
+ cc_library(
+@@ -235,6 +236,7 @@ cc_library(
+         "@local_tsl//tsl/platform:errors",
+         "@local_tsl//tsl/platform:statusor",
+     ],
++    visibility = ["//visibility:public"],
+ )
+ 
+ tf_cc_test(
+diff --git a/tensorflow/compiler/mlir/quantization/tensorflow/BUILD b/tensorflow/compiler/mlir/quantization/tensorflow/BUILD
+index d325d7ae17f..2cdaf9f35ac 100644
+--- a/tensorflow/compiler/mlir/quantization/tensorflow/BUILD
++++ b/tensorflow/compiler/mlir/quantization/tensorflow/BUILD
+@@ -512,6 +512,7 @@ cc_library(
+         "@llvm-project//mlir:Transforms",
+         "@local_xla//xla/mlir_hlo:all_passes",
+     ],
++    visibility = ["//visibility:public"],
+ )
+ 
+ cc_library(
+diff --git a/tensorflow/core/BUILD b/tensorflow/core/BUILD
+index e2adb15245c..f9ac87bb345 100644
+--- a/tensorflow/core/BUILD
++++ b/tensorflow/core/BUILD
+@@ -1805,6 +1805,7 @@ tf_cuda_library(
+         "//tensorflow/core/kernels:required",
+     ]),
+     alwayslink = 1,
++    visibility = ["//visibility:public"],
+ )
+ 
+ alias(
