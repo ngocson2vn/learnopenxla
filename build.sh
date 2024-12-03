@@ -11,8 +11,8 @@ set -e
 
 python_version=$(python -V | awk '{print $2}')
 echo "Python version: ${python_version}"
-if ! echo ${python_version} | grep '3\.9' >/dev/null; then
-  echo "ERROR: Python version is lower than 3.9.x!"
+if ! echo ${python_version} | grep '3\.11' >/dev/null; then
+  echo "ERROR: Python version is lower than 3.11.x!"
   exit 1
 fi
 
@@ -25,8 +25,9 @@ if ! echo ${gcc_version} | grep '10\.' >/dev/null; then
   exit 1
 fi
 
-export TF_PYTHON_VERSION=3.9
-touch requirements_lock_3_9.txt
+export TF_PYTHON_VERSION=3.11
+# touch requirements_lock_3_9.txt
+touch requirements_lock_3_11.txt
 
 ###################################################################################################
 # Initialization
@@ -69,9 +70,11 @@ export TF_NEED_ROCM=0
 export TF_NEED_OPENCL_SYCL=0
 export TF_NEED_CUDA=1
 export TF_NEED_TENSORRT=0
-export TF_CUDA_PATHS="/usr/local/cuda-12.2"
 export TF_CUDA_VERSION="12.2"
+export HERMETIC_CUDA_VERSION="12.2.0"
 export TF_CUDNN_VERSION="8.9"
+export HERMETIC_CUDNN_VERSION="8.9.7.29"
+export TF_CUDA_PATHS="/usr/local/cuda-12.2"
 export CUDA_TOOLKIT_PATH="/usr/local/cuda-12.2"
 export TF_CUDA_COMPUTE_CAPABILITIES="6.1,7.0,7.5,8.0,8.6,9.0"
 export TF_CUDA_CLANG="0"
@@ -106,10 +109,11 @@ FLAGS="--define=no_nccl_support=true --define=no_aws_support=true --define=no_gc
 
 COPTS="-O0,-g,-fno-inline"
 SRC_FILES=+stablehlo_compiler.cc
-CC=/usr/bin/gcc ./bazel --output_user_root=./forge build --config=cuda -s //:stablehlo_compiler \
+# CC=/usr/bin/gcc ./bazel --output_user_root=./forge build --config=cuda --explain=explain.txt //:stablehlo_compiler \
+# --experimental_repo_remote_exec \
+CC=/usr/bin/gcc ./bazel build --config=cuda --explain=explain.txt --subcommands //:stablehlo_compiler \
 --per_file_copt=${SRC_FILES}@${COPTS} \
 --strip=never $FLAGS \
---experimental_repo_remote_exec \
 --verbose_failures \
 --sandbox_debug \
 --experimental_ui_max_stdouterr_bytes=10485760

@@ -46,7 +46,7 @@ https://github.com/openxla/xla/tree/main/xla/examples/axpy
 #include "tsl/platform/path.h"
 #include "tsl/platform/statusor.h"
 
-#include "xla/stream_executor/cuda/cuda_platform.h"
+// #include "xla/stream_executor/cuda/cuda_platform.h"
 // #include "xla/stream_executor/platform.h"
 
 std::mutex global_log_mutex;

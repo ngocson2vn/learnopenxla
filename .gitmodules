@@ -2,3 +2,7 @@
 	path = third_party/tensorflow
 	url = https://github.com/tensorflow/tensorflow.git
 	shallow = true
+[submodule "third_party/xla"]
+	path = third_party/xla
+	url = https://github.com/openxla/xla.git
+	shallow = true
